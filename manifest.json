@@ -1,7 +1,7 @@
 {
   "id": "personal-funds",
   "name": "Personal Funds",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.5.0",
   "description": "A local-first personal funds tracker for income, expenses, credit card payments, lending, dashboard notes, and Canvas summaries.",
   "author": "MI-Lin",

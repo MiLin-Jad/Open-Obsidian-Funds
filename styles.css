@@ -1,4 +1,4 @@
-.modal.milin-finance-shell {
+.milin-finance-shell {
   --milin-purple: #9b7cff;
   --milin-ink: rgba(12, 15, 24, 0.76);
   --milin-panel: rgba(255, 255, 255, 0.055);
@@ -29,7 +29,21 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.modal.milin-finance-shell .modal-content {
+.workspace-leaf-content.milin-finance-shell,
+.personal-funds-view-shell.milin-finance-shell {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.modal.milin-finance-shell .modal-content,
+.workspace-leaf-content.milin-finance-shell .view-content,
+.personal-funds-view-shell.milin-finance-shell .view-content {
   padding: 0;
   background: transparent;
 }
@@ -85,6 +99,18 @@
   overflow: hidden;
 }
 
+.milin-finance-card[role="button"] {
+  cursor: pointer;
+}
+
+.milin-finance-card[role="button"]:hover,
+.milin-finance-card[role="button"]:focus-visible {
+  border-color: rgba(155, 124, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.112), var(--milin-panel));
+  transform: translateY(-1px);
+}
+
 .milin-finance-card-icon {
   width: 30px;
   height: 30px;
@@ -119,6 +145,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
+  font-variant-numeric: tabular-nums;
+}
+
+.milin-finance-card-subvalue {
+  margin-top: 7px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text-muted);
+  opacity: 0.78;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
 }
 
@@ -214,9 +253,9 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
-  flex: 0 1 260px;
+  flex: 0 1 132px;
   height: 56px;
-  padding: 0 24px;
+  padding: 0 18px;
   border-radius: 14px;
   border: 1px solid var(--milin-line);
   background: var(--milin-panel);
@@ -451,7 +490,7 @@
 }
 
 
-/* v1.0.1 responsive layout: wide screens keep key rows stable, narrow screens wrap safely. */
+/* v1.0.2 responsive layout: wide screens keep key rows stable, narrow screens wrap safely. */
 .modal.milin-finance-shell {
   width: min(1120px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
@@ -467,6 +506,13 @@
   scrollbar-width: thin;
 }
 
+.workspace-leaf-content.milin-finance-shell .view-content,
+.personal-funds-view-shell.milin-finance-shell .view-content {
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
 .milin-finance-modal {
   width: 100%;
   min-height: min(760px, calc(100vh - 28px));
@@ -474,6 +520,14 @@
   padding: clamp(18px, 2.5vw, 30px);
   box-sizing: border-box;
   overflow: visible;
+}
+
+.workspace-leaf-content.milin-finance-shell .milin-finance-modal,
+.personal-funds-view-shell.milin-finance-shell .milin-finance-modal {
+  min-height: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 0;
 }
 
 .milin-finance-header {
@@ -533,8 +587,9 @@
 }
 
 .milin-finance-action {
-  flex: 1 1 240px;
-  max-width: 280px;
+  flex: 0 1 132px;
+  max-width: 160px;
+  justify-content: center;
 }
 
 .milin-finance-record-row {
