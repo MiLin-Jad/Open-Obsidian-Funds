@@ -1,4 +1,4 @@
-const { Plugin, ItemView, Notice, PluginSettingTab, Setting, normalizePath, setIcon } = require('obsidian');
+const { Plugin, ItemView, Modal, Notice, PluginSettingTab, Setting, normalizePath, setIcon } = require('obsidian');
 
 const VIEW_TYPE_PERSONAL_FUNDS = 'personal-funds-view';
 const DEFAULT_DATA_FOLDER = 'Personal_funds';
@@ -42,6 +42,37 @@ const I18N = {
     currentAccount: '当前账户',
     creditCard: '信用卡',
     expense: '支出',
+    expectedExpense: '预计支出',
+    expectedExpenseDescription: '填写未来已确定、但尚未记账的支出金额。它不会改变当前账户余额。',
+    expectedExpensePrompt: '设置预计支出',
+    expectedExpenseSaved: '预计支出已保存',
+    addRecord: '记一笔',
+    viewAll: '查看全部',
+    navigation: '导航',
+    fixedExpense: '固定支出',
+    accountManagement: '账户管理',
+    settings: '设置',
+    fixedExpenseAdd: '添加固定支出',
+    fixedExpenseName: '名称',
+    fixedExpenseNamePlaceholder: '例如：房租、订阅',
+    fixedExpenseEmpty: '还没有固定支出条目',
+    fixedExpenseSaved: '固定支出已保存',
+    allRecords: '全部类型',
+    allCategories: '全部分类',
+    resetFilter: '重置筛选',
+    availableBalance: '可用余额',
+    afterExpectedExpense: '扣除预计支出后',
+    expectedTotalExpense: '含预计支出的总额',
+    accountOverview: '账户概览',
+    accountList: '资金明细',
+    balanceTrend: '余额趋势',
+    recentSevenDays: '近 7 天',
+    creditDue: '信用卡待还',
+    lendingOutstanding: '借出未收',
+    viewDetails: '查看详情',
+    currentMonthTotal: '本月金额',
+    monthlyTrend: '本月趋势',
+    noTrendData: '暂无足够的趋势数据',
     income: '收入',
     loanOut: '借出',
     amount: '金额',
@@ -114,6 +145,37 @@ const I18N = {
     currentAccount: 'Current account',
     creditCard: 'Credit card',
     expense: 'Expense',
+    expectedExpense: 'Expected expense',
+    expectedExpenseDescription: 'Enter confirmed future spending that has not been recorded yet. It does not change the current account balance.',
+    expectedExpensePrompt: 'Set expected expense',
+    expectedExpenseSaved: 'Expected expense saved',
+    addRecord: 'Add record',
+    viewAll: 'View all',
+    navigation: 'Navigation',
+    fixedExpense: 'Planned expense',
+    accountManagement: 'Accounts',
+    settings: 'Settings',
+    fixedExpenseAdd: 'Add planned expense',
+    fixedExpenseName: 'Name',
+    fixedExpenseNamePlaceholder: 'For example: Rent or subscription',
+    fixedExpenseEmpty: 'No planned expenses yet',
+    fixedExpenseSaved: 'Planned expense saved',
+    allRecords: 'All types',
+    allCategories: 'All categories',
+    resetFilter: 'Reset filters',
+    availableBalance: 'Available balance',
+    afterExpectedExpense: 'After expected expense',
+    expectedTotalExpense: 'Including expected expense',
+    accountOverview: 'Account overview',
+    accountList: 'Funds breakdown',
+    balanceTrend: 'Balance trend',
+    recentSevenDays: 'Last 7 days',
+    creditDue: 'Credit due',
+    lendingOutstanding: 'Lending outstanding',
+    viewDetails: 'View details',
+    currentMonthTotal: 'This month',
+    monthlyTrend: 'Monthly trend',
+    noTrendData: 'Not enough data for a trend yet',
     income: 'Income',
     loanOut: 'Lending',
     amount: 'Amount',
@@ -237,6 +299,12 @@ module.exports = class PersonalFundsPlugin extends Plugin {
     }
     if (!this.data.settings.dataFolder || typeof this.data.settings.dataFolder !== 'string') {
       this.data.settings.dataFolder = DEFAULT_DATA_FOLDER;
+    }
+    if (!Number.isFinite(Number(this.data.settings.expectedExpense)) || Number(this.data.settings.expectedExpense) < 0) {
+      this.data.settings.expectedExpense = 0;
+    }
+    if (!Array.isArray(this.data.settings.fixedExpenses)) {
+      this.data.settings.fixedExpenses = [];
     }
     await this.loadDatabaseOnStartup();
     await this.saveData(this.data);
@@ -447,7 +515,9 @@ module.exports = class PersonalFundsPlugin extends Plugin {
       version: 1,
       updatedAt: new Date().toISOString(),
       settings: {
-        language: this.getLanguage()
+        language: this.getLanguage(),
+        expectedExpense: this.getManualExpectedExpense(),
+        fixedExpenses: this.getFixedExpenses()
       },
       records: this.getRecords()
     };
@@ -496,6 +566,39 @@ module.exports = class PersonalFundsPlugin extends Plugin {
 
   getLanguage() {
     return this.data?.settings?.language || 'zh';
+  }
+
+  getManualExpectedExpense() {
+    return Math.max(0, Number(this.data?.settings?.expectedExpense) || 0);
+  }
+
+  getFixedExpenses() {
+    return Array.isArray(this.data?.settings?.fixedExpenses) ? this.data.settings.fixedExpenses : [];
+  }
+
+  getExpectedExpense() {
+    return this.getManualExpectedExpense() + this.getFixedExpenses().reduce((total, item) => total + Math.max(0, Number(item.amount) || 0), 0);
+  }
+
+  async setExpectedExpense(amount) {
+    this.data.settings.expectedExpense = Math.max(0, Number(amount) || 0);
+    await this.saveData(this.data);
+    await this.writeDatabase();
+    await this.updateDashboardNote();
+  }
+
+  async addFixedExpense(item) {
+    this.data.settings.fixedExpenses.unshift(item);
+    await this.saveData(this.data);
+    await this.writeDatabase();
+    await this.updateDashboardNote();
+  }
+
+  async deleteFixedExpense(id) {
+    this.data.settings.fixedExpenses = this.getFixedExpenses().filter(item => item.id !== id);
+    await this.saveData(this.data);
+    await this.writeDatabase();
+    await this.updateDashboardNote();
   }
 
   t(key, ...args) {
@@ -634,6 +737,53 @@ module.exports = class PersonalFundsPlugin extends Plugin {
     return this.getSummary(this.getCurrentMonthRecords());
   }
 
+  getBalanceTrend(days = 7) {
+    const dateForOffset = offset => {
+      const value = new Date();
+      value.setHours(0, 0, 0, 0);
+      value.setDate(value.getDate() + offset);
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const date = String(value.getDate()).padStart(2, '0');
+      return `${value.getFullYear()}-${month}-${date}`;
+    };
+    const dates = Array.from({ length: days }, (_, index) => dateForOffset(index - days + 1));
+    const firstDate = dates[0];
+    const balanceBeforePeriod = this.getSummary(this.getRecords().filter(record => String(record.date || '') < firstDate)).currentAccount;
+    let balance = balanceBeforePeriod;
+    return dates.map(date => {
+      // Apply records with the normal summary rules without mutating stored data.
+      const summary = { currentAccount: balance, creditCard: 0, expense: 0, income: 0, loanLeft: 0, collectLoan: 0, accountAdjust: 0 };
+      for (const record of this.getRecords()) {
+        if (record.date === date) this.applyRecordToSummary(summary, record);
+      }
+      balance = summary.currentAccount;
+      return { date, value: balance };
+    });
+  }
+
+  getMonthlyFlowTrend(days = 7) {
+    const dateForOffset = offset => {
+      const value = new Date();
+      value.setHours(0, 0, 0, 0);
+      value.setDate(value.getDate() + offset);
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const date = String(value.getDate()).padStart(2, '0');
+      return `${value.getFullYear()}-${month}-${date}`;
+    };
+    const dates = Array.from({ length: days }, (_, index) => dateForOffset(index - days + 1));
+    return dates.map(date => {
+      let income = 0;
+      let expense = 0;
+      for (const record of this.getRecords()) {
+        if (record.date !== date) continue;
+        const amount = Number(record.amount) || 0;
+        if (record.type === 'income' || record.type === 'collect_loan') income += amount;
+        if (record.type === 'expense' || record.type === 'credit_expense' || record.type === 'repay_credit' || record.type === 'lend_out') expense += amount;
+      }
+      return { date, income, expense };
+    });
+  }
+
   async ensureFolderForPath(filePath) {
     const parts = normalizePath(filePath).split('/');
     parts.pop();
@@ -680,6 +830,7 @@ module.exports = class PersonalFundsPlugin extends Plugin {
 | ${this.t('item')} | ${this.t('value')} |
 |---|---:|
 ${row(this.t('currentAccount'), all.currentAccount)}
+${row(this.t('expectedExpense'), this.getExpectedExpense())}
 ${row(this.t('creditCard'), all.creditCard)}
 ${row(this.t('expense'), all.expense)}
 ${row(this.t('income'), all.income)}
@@ -804,6 +955,145 @@ ${recordRows}
   }
 };
 
+class ExpectedExpenseModal extends Modal {
+  constructor(app, plugin, onSaved) {
+    super(app);
+    this.plugin = plugin;
+    this.onSaved = onSaved;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl('h2', { text: this.plugin.t('expectedExpensePrompt') });
+
+    let amountInput;
+    new Setting(contentEl)
+      .setName(this.plugin.t('expectedExpense'))
+      .setDesc(this.plugin.t('expectedExpenseDescription'))
+      .addText(text => {
+        amountInput = text;
+        text.setPlaceholder('0').setValue(String(this.plugin.getManualExpectedExpense()));
+        text.inputEl.type = 'number';
+        text.inputEl.min = '0';
+        text.inputEl.step = '0.01';
+        text.inputEl.inputMode = 'decimal';
+      });
+
+    const actions = contentEl.createDiv({ cls: 'modal-button-container' });
+    const saveButton = actions.createEl('button', { cls: 'mod-cta', text: this.plugin.t('save') });
+    saveButton.onclick = async () => {
+      await this.plugin.setExpectedExpense(amountInput.getValue());
+      new Notice(this.plugin.t('expectedExpenseSaved'));
+      this.onSaved?.();
+      this.close();
+    };
+    setTimeout(() => amountInput.inputEl.focus(), 0);
+  }
+
+  onClose() {
+    this.contentEl.empty();
+  }
+}
+
+class RecordEntryModal extends Modal {
+  constructor(app, plugin, onSaved) {
+    super(app);
+    this.plugin = plugin;
+    this.onSaved = onSaved;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass('milin-finance-record-modal');
+    contentEl.createEl('h2', { text: this.plugin.t('addRecord') });
+
+    const form = contentEl.createDiv({ cls: 'milin-finance-record-modal-form' });
+    const typeSelect = form.createEl('select');
+    for (const type of TYPES) {
+      const option = typeSelect.createEl('option', { text: type.labels[this.plugin.getLanguage()] || type.labels.zh });
+      option.value = type.id;
+    }
+    const amountInput = form.createEl('input', { attr: { type: 'number', placeholder: this.plugin.t('amount'), min: '0', step: '0.01' } });
+    amountInput.inputMode = 'decimal';
+    const categorySelect = form.createEl('select');
+    for (const category of this.plugin.getCategories()) {
+      const option = categorySelect.createEl('option', { text: category });
+      option.value = category;
+    }
+    const personInput = form.createEl('input', { attr: { type: 'text', placeholder: this.plugin.t('personPlaceholder') } });
+    const noteInput = form.createEl('input', { attr: { type: 'text', placeholder: this.plugin.t('notePlaceholder') } });
+
+    const actions = contentEl.createDiv({ cls: 'modal-button-container' });
+    const saveButton = actions.createEl('button', { cls: 'mod-cta', text: this.plugin.t('save') });
+    saveButton.onclick = async () => {
+      const amount = Number(amountInput.value);
+      if (!amount || amount <= 0) {
+        new Notice(this.plugin.t('amountNotice'));
+        amountInput.focus();
+        return;
+      }
+      const { date, time } = localDateParts();
+      await this.plugin.addRecord({
+        id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        date,
+        time,
+        type: typeSelect.value,
+        amount,
+        category: categorySelect.value,
+        person: personInput.value.trim(),
+        note: noteInput.value.trim()
+      });
+      new Notice(this.plugin.t('savedNotice'));
+      this.onSaved?.();
+      this.close();
+    };
+    setTimeout(() => amountInput.focus(), 0);
+  }
+
+  onClose() {
+    this.contentEl.empty();
+  }
+}
+
+class FixedExpenseModal extends Modal {
+  constructor(app, plugin, onSaved) {
+    super(app);
+    this.plugin = plugin;
+    this.onSaved = onSaved;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass('milin-finance-record-modal');
+    contentEl.createEl('h2', { text: this.plugin.t('fixedExpenseAdd') });
+    const form = contentEl.createDiv({ cls: 'milin-finance-record-modal-form' });
+    const name = form.createEl('input', { attr: { type: 'text', placeholder: this.plugin.t('fixedExpenseNamePlaceholder') } });
+    const amount = form.createEl('input', { attr: { type: 'number', placeholder: this.plugin.t('amount'), min: '0', step: '0.01' } });
+    amount.inputMode = 'decimal';
+    const note = form.createEl('input', { attr: { type: 'text', placeholder: this.plugin.t('notePlaceholder') } });
+    note.style.gridColumn = '1 / -1';
+    const actions = contentEl.createDiv({ cls: 'modal-button-container' });
+    const save = actions.createEl('button', { cls: 'mod-cta', text: this.plugin.t('save') });
+    save.onclick = async () => {
+      const value = Number(amount.value);
+      if (!name.value.trim() || !value || value <= 0) {
+        new Notice(this.plugin.t('amountNotice'));
+        return;
+      }
+      await this.plugin.addFixedExpense({ id: `${Date.now()}_${Math.random().toString(16).slice(2)}`, name: name.value.trim(), amount: value, note: note.value.trim() });
+      new Notice(this.plugin.t('fixedExpenseSaved'));
+      this.onSaved?.();
+      this.close();
+    };
+    setTimeout(() => name.focus(), 0);
+  }
+
+  onClose() { this.contentEl.empty(); }
+}
+
 class PersonalFundsSettingTab extends PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
@@ -836,6 +1126,10 @@ class FinanceView extends ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.plugin = plugin;
+    this.activeSection = 'overview';
+    this.navigationOpen = false;
+    this.recordCategoryFilter = 'all';
+    this.recordTypeFilter = 'all';
   }
 
   getViewType() {
@@ -853,6 +1147,14 @@ class FinanceView extends ItemView {
   async onOpen() {
     this.containerEl.addClass('milin-finance-shell');
     this.containerEl.addClass('personal-funds-view-shell');
+    this.registerDomEvent(this.contentEl, 'wheel', event => {
+      const nestedScroller = event.target.closest?.('.milin-finance-overview-records');
+      const scrollTarget = nestedScroller || this.contentEl;
+      if (scrollTarget.scrollHeight <= scrollTarget.clientHeight) return;
+      scrollTarget.scrollTop += event.deltaY;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
     this.render();
   }
 
@@ -868,10 +1170,42 @@ class FinanceView extends ItemView {
     contentEl.addClass('milin-finance-modal');
     contentEl.addClass('milin-finance-tab');
 
-    const header = contentEl.createDiv({ cls: 'milin-finance-header' });
+    const layout = contentEl.createDiv({ cls: `milin-finance-dashboard-layout ${this.navigationOpen ? 'is-navigation-open' : ''}` });
+    this.renderNavigation(layout);
+    const workspace = layout.createDiv({ cls: 'milin-finance-workspace' });
+    const header = workspace.createDiv({ cls: 'milin-finance-header' });
     header.createEl('h2', { text: this.plugin.t('title') });
 
     const headerActions = header.createDiv({ cls: 'milin-finance-header-actions' });
+    const addToolbarAction = (iconName, label, callback, className = 'milin-finance-toolbar-action') => {
+      const button = headerActions.createEl('button', {
+        cls: className,
+        attr: { type: 'button', title: label, 'aria-label': label }
+      });
+      setIcon(button, iconName);
+      button.onclick = callback;
+      return button;
+    };
+    addToolbarAction('menu', this.plugin.t('navigation'), () => {
+      this.navigationOpen = !this.navigationOpen;
+      this.render();
+    }, 'milin-finance-toolbar-action milin-finance-toolbar-menu');
+    const addRecordButton = addToolbarAction('plus', this.plugin.t('addRecord'), () => {
+      this.openRecordModal();
+    }, 'milin-finance-toolbar-action milin-finance-toolbar-add');
+    addRecordButton.createSpan({ text: this.plugin.t('addRecord') });
+    addToolbarAction('refresh-cw', this.plugin.t('updateDashboard'), async () => {
+      await this.plugin.updateDashboardNote();
+      await this.plugin.createOrUpdateCanvas();
+      new Notice(this.plugin.t('dashboardUpdatedNotice'));
+    });
+    addToolbarAction('database', this.plugin.t('readDatabase'), async () => {
+      const loaded = await this.plugin.readDatabase();
+      if (loaded) {
+        new Notice(this.plugin.t('databaseReadNotice'));
+        this.render();
+      }
+    });
     const langBtn = headerActions.createEl('button', {
       cls: 'milin-finance-lang-toggle',
       text: this.plugin.t('languageSwitch'),
@@ -883,35 +1217,391 @@ class FinanceView extends ItemView {
       this.render();
     };
 
-    this.renderSummary(contentEl);
-    this.renderForm(contentEl);
-    this.renderCanvasActions(contentEl);
-    this.renderRecords(contentEl);
+    if (this.activeSection === 'overview') {
+      this.renderOverviewWorkspace(workspace);
+      return;
+    }
+    if (this.activeSection === 'records') {
+      this.renderRecordsWorkspace(workspace);
+      return;
+    }
+    if (this.activeSection === 'expense') {
+      this.renderFixedExpenseWorkspace(workspace);
+      return;
+    }
+    this.renderMetricWorkspace(workspace);
+  }
+
+  renderNavigation(root) {
+    const sections = [
+      { id: 'overview', title: this.plugin.t('overview'), icon: 'house' },
+      { id: 'records', title: this.plugin.t('recentRecords'), icon: 'notebook-tabs' },
+      { id: 'expense', title: this.plugin.t('fixedExpense'), icon: 'calendar-days' },
+      { id: 'account', title: this.plugin.t('accountManagement'), icon: 'wallet-cards' }
+    ];
+    const nav = root.createDiv({ cls: 'milin-finance-nav' });
+    for (const section of sections) {
+      const item = nav.createEl('button', {
+        cls: `milin-finance-nav-item ${this.activeSection === section.id ? 'is-active' : ''}`,
+        attr: { type: 'button', 'aria-current': this.activeSection === section.id ? 'page' : 'false' }
+      });
+      const icon = item.createDiv({ cls: 'milin-finance-nav-icon' });
+      setIcon(icon, section.icon);
+      const copy = item.createDiv({ cls: 'milin-finance-nav-copy' });
+      copy.createDiv({ cls: 'milin-finance-nav-title', text: section.title });
+      item.onclick = () => {
+        this.activeSection = section.id;
+        this.navigationOpen = false;
+        this.render();
+      };
+    }
+  }
+
+  renderOverviewWorkspace(root) {
+    const summary = this.plugin.getSummary();
+    const month = this.plugin.getCurrentMonthSummary();
+    const heading = root.createDiv({ cls: 'milin-finance-workspace-heading' });
+    heading.createEl('h1', { text: this.plugin.t('overview') });
+    heading.createDiv({ cls: 'milin-finance-workspace-subtitle', text: this.plugin.t('accountOverview') });
+
+    const cards = root.createDiv({ cls: 'milin-finance-overview-cards' });
+    const items = [
+      [this.plugin.t('currentAccount'), summary.currentAccount, 'wallet', 'account'],
+      [this.plugin.t('creditDue'), summary.creditCard, 'credit-card', 'credit'],
+      [this.plugin.t('monthlyExpense'), month.expense, 'trending-up', 'expense'],
+      [this.plugin.t('monthlyIncome'), month.income, 'arrow-down-to-line', 'income'],
+      [this.plugin.t('lendingOutstanding'), summary.loanLeft, 'users-round', 'loan']
+    ];
+    for (const [label, value, iconName, tone] of items) {
+      const card = cards.createDiv({ cls: `milin-finance-overview-card milin-finance-overview-card--${tone}` });
+      const icon = card.createDiv({ cls: 'milin-finance-overview-icon' });
+      setIcon(icon, iconName);
+      const copy = card.createDiv({ cls: 'milin-finance-overview-copy' });
+      copy.createDiv({ cls: 'milin-finance-overview-label', text: label });
+      copy.createDiv({ cls: 'milin-finance-overview-value', text: formatMoney(value) });
+    }
+
+    const content = root.createDiv({ cls: 'milin-finance-overview-grid' });
+    this.renderOverviewRecentRecords(content);
+    this.renderMonthlyTrend(content, month);
+  }
+
+  renderOverviewRecentRecords(root) {
+    const panel = root.createDiv({ cls: 'milin-finance-panel milin-finance-overview-records' });
+    const header = panel.createDiv({ cls: 'milin-finance-panel-title' });
+    header.createEl('h3', { text: this.plugin.t('recentRecords') });
+    const more = header.createEl('button', { cls: 'milin-finance-panel-link', text: this.plugin.t('viewAll') });
+    setIcon(more.createSpan({ cls: 'milin-finance-panel-link-icon' }), 'arrow-right');
+    more.onclick = () => { this.activeSection = 'records'; this.render(); };
+    const records = this.plugin.getRecords().slice(0, 5);
+    if (!records.length) {
+      panel.createDiv({ cls: 'milin-finance-empty', text: this.plugin.t('noRecords') });
+      return;
+    }
+    for (const record of records) {
+      const row = panel.createDiv({ cls: 'milin-finance-overview-record' });
+      const icon = row.createDiv({ cls: `milin-finance-overview-record-icon milin-finance-record-row--${this.plugin.getTypeTone(record.type)}` });
+      setIcon(icon, this.recordIcon(record.type));
+      const copy = row.createDiv({ cls: 'milin-finance-overview-record-copy' });
+      copy.createDiv({ text: record.note || record.category || this.plugin.getTypeLabel(record.type) });
+      copy.createDiv({ cls: 'milin-finance-overview-record-type', text: this.plugin.getTypeLabel(record.type) });
+      row.createSpan({ cls: 'milin-finance-overview-record-date', text: String(record.date || '').slice(5) });
+      const amountText = this.recordAmountText(record);
+      const amountTone = amountText.startsWith('+') ? 'is-positive' : amountText.startsWith('-') ? 'is-negative' : '';
+      row.createSpan({ cls: `milin-finance-overview-record-value ${amountTone}`, text: amountText });
+    }
+  }
+
+  renderMonthlyTrend(root, month) {
+    const panel = root.createDiv({ cls: 'milin-finance-panel milin-finance-monthly-trend' });
+    const header = panel.createDiv({ cls: 'milin-finance-panel-title' });
+    header.createEl('h3', { text: this.plugin.t('monthlyTrend') });
+    const projection = header.createDiv({ cls: 'milin-finance-monthly-projection' });
+    projection.createDiv({ text: `${this.plugin.t('expectedExpense')}：${formatMoney(this.plugin.getExpectedExpense())}` });
+    projection.createDiv({ text: `${this.plugin.t('afterExpectedExpense')}：${formatMoney(this.plugin.getSummary().currentAccount - this.plugin.getExpectedExpense())}` });
+    const trend = this.plugin.getMonthlyFlowTrend(7);
+    const max = Math.max(1, ...trend.flatMap(point => [point.income, point.expense]));
+    const pointList = key => trend.map((point, index) => {
+      const x = 24 + index * 592 / Math.max(trend.length - 1, 1);
+      const y = 186 - point[key] / max * 148;
+      return { x, y, point };
+    });
+    const expensePoints = pointList('expense');
+    const incomePoints = pointList('income');
+    const chart = panel.createDiv({ cls: 'milin-finance-trend-chart' });
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 640 235');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    for (let index = 0; index <= 4; index += 1) {
+      const y = 186 - index * 148 / 4;
+      const grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      grid.setAttribute('class', 'milin-finance-trend-gridline');
+      grid.setAttribute('x1', '34'); grid.setAttribute('x2', '616'); grid.setAttribute('y1', y); grid.setAttribute('y2', y);
+      svg.appendChild(grid);
+      const tick = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tick.setAttribute('class', 'milin-finance-trend-axis');
+      tick.setAttribute('x', '0'); tick.setAttribute('y', y + 4);
+      tick.textContent = String(Math.round(max * index / 4));
+      svg.appendChild(tick);
+    }
+    for (const [points, className] of [[expensePoints, 'milin-finance-trend-expense'], [incomePoints, 'milin-finance-trend-income']]) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      line.setAttribute('class', className);
+      line.setAttribute('points', points.map(point => `${point.x},${point.y}`).join(' '));
+      svg.appendChild(line);
+      for (const { x, y } of points) {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('class', className);
+        dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('r', '4.5');
+        svg.appendChild(dot);
+      }
+    }
+    for (const { x, point } of incomePoints) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('class', 'milin-finance-trend-label');
+      label.setAttribute('x', x); label.setAttribute('y', '222'); label.setAttribute('text-anchor', 'middle');
+      label.textContent = point.date.slice(5);
+      svg.appendChild(label);
+    }
+    chart.appendChild(svg);
+  }
+
+  renderFixedExpenseWorkspace(root) {
+    const entries = this.plugin.getFixedExpenses();
+    const heading = root.createDiv({ cls: 'milin-finance-workspace-heading' });
+    heading.createEl('h1', { text: this.plugin.t('fixedExpense') });
+    heading.createDiv({ cls: 'milin-finance-workspace-subtitle', text: this.plugin.t('expectedExpenseDescription') });
+
+    const hero = root.createDiv({ cls: 'milin-finance-hero milin-finance-fixed-expense-hero' });
+    const main = hero.createDiv({ cls: 'milin-finance-hero-main' });
+    main.createDiv({ cls: 'milin-finance-hero-label', text: this.plugin.t('expectedExpense') });
+    main.createDiv({ cls: 'milin-finance-hero-value', text: formatMoney(this.plugin.getExpectedExpense()) });
+    const add = hero.createEl('button', { cls: 'milin-finance-fixed-expense-add', text: this.plugin.t('fixedExpenseAdd') });
+    setIcon(add.createSpan(), 'plus');
+    add.onclick = () => new FixedExpenseModal(this.app, this.plugin, () => this.render()).open();
+
+    const panel = root.createDiv({ cls: 'milin-finance-panel milin-finance-fixed-expense-list' });
+    panel.createEl('h3', { text: this.plugin.t('fixedExpense') });
+    if (this.plugin.getManualExpectedExpense() > 0) {
+      this.renderFixedExpenseRow(panel, { id: 'manual', name: this.plugin.t('expectedExpense'), amount: this.plugin.getManualExpectedExpense(), note: '' }, false);
+    }
+    if (!entries.length && this.plugin.getManualExpectedExpense() <= 0) {
+      panel.createDiv({ cls: 'milin-finance-empty', text: this.plugin.t('fixedExpenseEmpty') });
+      return;
+    }
+    for (const entry of entries) this.renderFixedExpenseRow(panel, entry, true);
+  }
+
+  renderFixedExpenseRow(root, entry, canDelete) {
+    const row = root.createDiv({ cls: 'milin-finance-fixed-expense-row' });
+    const copy = row.createDiv({ cls: 'milin-finance-section-record-copy' });
+    copy.createDiv({ cls: 'milin-finance-breakdown-label', text: entry.name });
+    if (entry.note) copy.createDiv({ cls: 'milin-finance-section-record-note', text: entry.note });
+    row.createSpan({ cls: 'milin-finance-breakdown-value', text: formatMoney(entry.amount) });
+    if (canDelete) {
+      const remove = row.createEl('button', { cls: 'milin-finance-fixed-expense-delete', attr: { 'aria-label': this.plugin.t('delete') } });
+      setIcon(remove, 'trash-2');
+      remove.onclick = async () => { await this.plugin.deleteFixedExpense(entry.id); this.render(); };
+    }
+  }
+
+  renderMetricWorkspace(root) {
+    const summary = this.plugin.getSummary();
+    const month = this.plugin.getCurrentMonthSummary();
+    const section = {
+      account: { title: this.plugin.t('currentAccount'), subtitle: this.plugin.t('availableBalance'), value: summary.currentAccount, icon: 'wallet' },
+      credit: { title: this.plugin.t('creditCard'), subtitle: this.plugin.t('creditDue'), value: summary.creditCard, icon: 'credit-card' },
+      expense: { title: this.plugin.t('expense'), subtitle: this.plugin.t('currentMonthTotal'), value: month.expense, icon: 'trending-up' },
+      income: { title: this.plugin.t('income'), subtitle: this.plugin.t('currentMonthTotal'), value: month.income, icon: 'arrow-down-to-line' },
+      loan: { title: this.plugin.t('loanOut'), subtitle: this.plugin.t('lendingOutstanding'), value: summary.loanLeft, icon: 'users-round' }
+    }[this.activeSection];
+
+    const heading = root.createDiv({ cls: 'milin-finance-workspace-heading' });
+    heading.createEl('h1', { text: section.title });
+    heading.createDiv({ cls: 'milin-finance-workspace-subtitle', text: section.subtitle });
+
+    const hero = root.createDiv({ cls: 'milin-finance-hero' });
+    const heroMain = hero.createDiv({ cls: 'milin-finance-hero-main' });
+    heroMain.createDiv({ cls: 'milin-finance-hero-label', text: section.subtitle });
+    heroMain.createDiv({ cls: 'milin-finance-hero-value', text: formatMoney(section.value) });
+    const heroIcon = hero.createDiv({ cls: 'milin-finance-hero-icon' });
+    setIcon(heroIcon, section.icon);
+
+    if (this.activeSection === 'account' || this.activeSection === 'expense') {
+      const projection = hero.createDiv({ cls: 'milin-finance-projection' });
+      projection.createDiv({ text: `${this.plugin.t('expectedExpense')}：${formatMoney(this.plugin.getExpectedExpense())}` });
+      const afterExpected = this.activeSection === 'account' ? section.value - this.plugin.getExpectedExpense() : section.value + this.plugin.getExpectedExpense();
+      const projectionLabel = this.activeSection === 'account' ? this.plugin.t('afterExpectedExpense') : this.plugin.t('expectedTotalExpense');
+      projection.createDiv({ cls: 'milin-finance-projection-after', text: `${projectionLabel}：${formatMoney(afterExpected)}` });
+      hero.onclick = () => this.openExpectedExpenseModal();
+      hero.setAttr('title', this.plugin.t('expectedExpensePrompt'));
+    }
+
+    const content = root.createDiv({ cls: 'milin-finance-workspace-grid' });
+    if (this.activeSection === 'account') {
+      this.renderAccountBreakdown(content, summary);
+      this.renderBalanceTrend(content);
+    } else {
+      this.renderSectionDetails(content, section, summary, month);
+    }
+  }
+
+  renderAccountBreakdown(root, summary) {
+    const panel = root.createDiv({ cls: 'milin-finance-panel' });
+    panel.createEl('h3', { text: this.plugin.t('accountList') });
+    const rows = [
+      [this.plugin.t('currentAccount'), summary.currentAccount, 'wallet'],
+      [this.plugin.t('afterExpectedExpense'), summary.currentAccount - this.plugin.getExpectedExpense(), 'circle-dollar-sign'],
+      [this.plugin.t('creditDue'), summary.creditCard, 'credit-card'],
+      [this.plugin.t('lendingOutstanding'), summary.loanLeft, 'users-round']
+    ];
+    for (const [label, value, iconName] of rows) {
+      const row = panel.createDiv({ cls: 'milin-finance-breakdown-row' });
+      const icon = row.createDiv({ cls: 'milin-finance-breakdown-icon' });
+      setIcon(icon, iconName);
+      row.createSpan({ cls: 'milin-finance-breakdown-label', text: label });
+      row.createSpan({ cls: 'milin-finance-breakdown-value', text: formatMoney(value) });
+    }
+  }
+
+  renderBalanceTrend(root) {
+    const panel = root.createDiv({ cls: 'milin-finance-panel milin-finance-trend-panel' });
+    const title = panel.createDiv({ cls: 'milin-finance-panel-title' });
+    title.createEl('h3', { text: this.plugin.t('balanceTrend') });
+    title.createSpan({ text: this.plugin.t('recentSevenDays') });
+    const points = this.plugin.getBalanceTrend(7);
+    const values = points.map(point => point.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const chart = panel.createDiv({ cls: 'milin-finance-trend-chart' });
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 640 260');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const coordinates = points.map((point, index) => {
+      const x = 24 + (index * 592 / Math.max(points.length - 1, 1));
+      const y = 34 + (1 - ((point.value - min) / range)) * 160;
+      return { x, y, point };
+    });
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    line.setAttribute('class', 'milin-finance-trend-line');
+    line.setAttribute('points', coordinates.map(point => `${point.x},${point.y}`).join(' '));
+    svg.appendChild(line);
+    for (const { x, y, point } of coordinates) {
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('class', 'milin-finance-trend-dot');
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', '5');
+      svg.appendChild(dot);
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('class', 'milin-finance-trend-label');
+      label.setAttribute('x', x);
+      label.setAttribute('y', '230');
+      label.setAttribute('text-anchor', 'middle');
+      label.textContent = point.date.slice(5);
+      svg.appendChild(label);
+    }
+    chart.appendChild(svg);
+  }
+
+  renderSectionDetails(root, section, summary, month) {
+    const panel = root.createDiv({ cls: 'milin-finance-panel milin-finance-section-details' });
+    panel.createEl('h3', { text: this.plugin.t('accountOverview') });
+    const detail = panel.createDiv({ cls: 'milin-finance-section-detail-value', text: formatMoney(section.value) });
+    detail.setAttr('data-section', this.activeSection);
+    const records = this.plugin.getRecords().filter(record => {
+      const types = { credit: ['credit_expense', 'repay_credit'], expense: ['expense', 'credit_expense'], income: ['income'], loan: ['lend_out', 'collect_loan'] };
+      return (types[this.activeSection] || []).includes(record.type);
+    }).slice(0, 5);
+    if (!records.length) {
+      panel.createDiv({ cls: 'milin-finance-empty', text: this.plugin.t('noRecords') });
+      return;
+    }
+    for (const record of records) {
+      const row = panel.createDiv({ cls: 'milin-finance-breakdown-row' });
+      const copy = row.createDiv({ cls: 'milin-finance-section-record-copy' });
+      if (this.activeSection === 'loan') {
+        copy.createDiv({ cls: 'milin-finance-breakdown-label', text: `${record.date || ''} · ${record.person || this.plugin.t('self')}` });
+        copy.createDiv({ cls: 'milin-finance-section-record-note', text: record.note || record.category || this.plugin.t('emptyNote') });
+      } else {
+        copy.createDiv({ cls: 'milin-finance-breakdown-label', text: `${record.date || ''} · ${this.plugin.getTypeLabel(record.type)}` });
+      }
+      row.createSpan({ cls: 'milin-finance-breakdown-value', text: formatMoney(record.amount) });
+    }
+  }
+
+  renderRecordsWorkspace(root) {
+    const heading = root.createDiv({ cls: 'milin-finance-workspace-heading' });
+    heading.createEl('h1', { text: this.plugin.t('recentRecords') });
+    heading.createDiv({ cls: 'milin-finance-workspace-subtitle', text: this.plugin.t('viewDetails') });
+    this.renderRecordFilters(root);
+    this.renderRecords(root, this.getFilteredRecords());
+  }
+
+  getFilteredRecords() {
+    return this.plugin.getRecords().filter(record => {
+      const typeMatches = this.recordTypeFilter === 'all' || record.type === this.recordTypeFilter;
+      const categoryMatches = this.recordCategoryFilter === 'all' || record.category === this.recordCategoryFilter;
+      return typeMatches && categoryMatches;
+    });
+  }
+
+  renderRecordFilters(root) {
+    const bar = root.createDiv({ cls: 'milin-finance-record-filters' });
+    const typeSelect = bar.createEl('select', { attr: { 'aria-label': this.plugin.t('type') } });
+    const allType = typeSelect.createEl('option', { text: this.plugin.t('allRecords') });
+    allType.value = 'all';
+    for (const type of TYPES) {
+      const option = typeSelect.createEl('option', { text: type.labels[this.plugin.getLanguage()] || type.labels.zh });
+      option.value = type.id;
+    }
+    typeSelect.value = this.recordTypeFilter;
+    typeSelect.onchange = () => { this.recordTypeFilter = typeSelect.value; this.render(); };
+
+    const categorySelect = bar.createEl('select', { attr: { 'aria-label': this.plugin.t('category') } });
+    const allCategory = categorySelect.createEl('option', { text: this.plugin.t('allCategories') });
+    allCategory.value = 'all';
+    const categories = [...new Set(this.plugin.getRecords().map(record => record.category).filter(Boolean))].sort();
+    for (const category of categories) {
+      const option = categorySelect.createEl('option', { text: category });
+      option.value = category;
+    }
+    categorySelect.value = this.recordCategoryFilter;
+    categorySelect.onchange = () => { this.recordCategoryFilter = categorySelect.value; this.render(); };
+
+    const reset = bar.createEl('button', { cls: 'milin-finance-filter-reset', text: this.plugin.t('resetFilter') });
+    reset.onclick = () => { this.recordTypeFilter = 'all'; this.recordCategoryFilter = 'all'; this.render(); };
+  }
+
+  openRecordModal() {
+    new RecordEntryModal(this.app, this.plugin, () => this.render()).open();
   }
 
   renderSummary(root) {
     const s = this.plugin.getSummary();
     const box = root.createDiv({ cls: 'milin-finance-summary' });
 
-    this.summaryCard(box, this.plugin.t('currentAccount'), s.currentAccount, 'wallet', 'account', SUMMARY_NOTES[0], this.plugin.t('summaryAfterCredit', s.creditCard));
+    this.summaryCard(box, this.plugin.t('currentAccount'), s.currentAccount, 'wallet', 'account', SUMMARY_NOTES[0], `${this.plugin.t('expectedExpense')}：${formatMoney(this.plugin.getExpectedExpense())}`);
     this.summaryCard(box, this.plugin.t('creditCard'), s.creditCard, 'credit-card', 'credit', SUMMARY_NOTES[1]);
-    this.summaryCard(box, this.plugin.t('expense'), s.expense, 'trending-down', 'expense', SUMMARY_NOTES[2]);
+    this.summaryCard(box, this.plugin.t('expense'), s.expense, 'trending-down', 'expense', SUMMARY_NOTES[2], null, () => this.openExpectedExpenseModal());
     this.summaryCard(box, this.plugin.t('income'), s.income, 'trending-up', 'income', SUMMARY_NOTES[3]);
     this.summaryCard(box, this.plugin.t('loanOut'), s.loanLeft, 'user-round-plus', 'loan', SUMMARY_NOTES[4]);
   }
 
-  summaryCard(root, title, value, iconName, tone, note, subValue) {
+  summaryCard(root, title, value, iconName, tone, note, subValue, onClick) {
     const text = formatMoney(value);
     const card = root.createDiv({ cls: `milin-finance-card milin-finance-card--${tone}` });
     card.setAttr('role', 'button');
     card.setAttr('tabindex', '0');
     card.setAttr('aria-label', `${title}: ${text}`);
-    card.setAttr('title', this.plugin.getSummaryNotePath(note));
-    card.onclick = () => this.plugin.openSummaryNote(note);
+    card.setAttr('title', onClick ? this.plugin.t('expectedExpensePrompt') : this.plugin.getSummaryNotePath(note));
+    card.onclick = onClick || (() => this.plugin.openSummaryNote(note));
     card.onkeydown = event => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        this.plugin.openSummaryNote(note);
+        if (onClick) onClick();
+        else this.plugin.openSummaryNote(note);
       }
     };
 
@@ -924,6 +1614,10 @@ class FinanceView extends ItemView {
     if (subValue) {
       card.createDiv({ cls: 'milin-finance-card-subvalue', text: subValue });
     }
+  }
+
+  openExpectedExpenseModal() {
+    new ExpectedExpenseModal(this.app, this.plugin, () => this.render()).open();
   }
 
   renderForm(root) {
@@ -1019,8 +1713,8 @@ class FinanceView extends ItemView {
     };
   }
 
-  renderRecords(root) {
-    const records = this.plugin.getRecords().slice(0, 30);
+  renderRecords(root, sourceRecords = this.plugin.getRecords()) {
+    const records = sourceRecords.slice(0, 30);
     const top = root.createDiv({ cls: 'milin-finance-record-head' });
     top.createEl('h3', { text: this.plugin.t('recentRecords') });
     const count = top.createDiv({ cls: 'milin-finance-record-count' });
