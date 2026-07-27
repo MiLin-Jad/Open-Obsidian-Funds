@@ -1215,6 +1215,9 @@ body:has(.personal-funds-view-shell) .notice { min-width: 0; padding: 10px 14px;
 .milin-finance-fixed-expense-add { margin-left: auto; padding: 9px 13px; border: 0; border-radius: 8px; background: #8B5CF6; color: white; cursor: pointer; }
 .milin-finance-fixed-expense-add span { display: inline-flex; margin-right: 6px; vertical-align: middle; }
 .milin-finance-fixed-expense-add span svg { width: 15px; height: 15px; }
+.milin-finance-expected-income-hero .milin-finance-hero-value { color: #4ADE80; }
+.milin-finance-expected-income-add { background: #24945E; }
+.milin-finance-expected-income-add:hover { background: #2EAD70; }
 .milin-finance-fixed-expense-list { margin-top: clamp(16px, 2cqw, 24px); }
 .milin-finance-fixed-expense-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 32px; align-items: center; gap: 14px; min-height: 58px; border-bottom: 1px solid #272C39; }
 .milin-finance-fixed-expense-row:last-child { border-bottom: 0; }
@@ -1261,4 +1264,85 @@ circle.milin-finance-trend-income { fill: #5B8DEF; stroke: #161A24; }
 .milin-finance-breakdown-value {
   font-size: clamp(14px, 1.15cqw, 17px);
   font-weight: 560;
+}
+
+/* Unified monetary hierarchy and restrained overview-card emphasis. */
+.milin-finance-overview-cards {
+  grid-template-columns: minmax(200px, 1.12fr) repeat(4, minmax(175px, 1fr));
+}
+.milin-finance-overview-card {
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 11px;
+  padding: 15px;
+}
+.milin-finance-overview-card:not(.milin-finance-overview-card--account) .milin-finance-overview-icon {
+  width: 50px;
+  height: 50px;
+}
+.milin-finance-overview-card--account {
+  grid-template-columns: 54px minmax(0, 1fr);
+  padding-inline: 17px;
+  border-color: rgba(139, 92, 246, .32);
+  background: linear-gradient(135deg, rgba(139, 92, 246, .08), #161A24 62%);
+}
+.milin-finance-overview-card--account .milin-finance-overview-icon {
+  width: 54px;
+  height: 54px;
+}
+
+.milin-finance-money {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+.milin-finance-money-integer {
+  font-size: 1em;
+  font-weight: inherit;
+}
+.milin-finance-money-decimal {
+  margin-left: 1px;
+  font-size: max(.66em, 10px);
+  font-weight: 560;
+  letter-spacing: -0.01em;
+}
+.milin-finance-money-unit {
+  margin-left: .45em;
+  color: #858896;
+  font-size: max(.48em, 8px);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.milin-finance-overview-value { font-size: clamp(18px, 1.8cqw, 22px); }
+.milin-finance-overview-card--account .milin-finance-overview-value {
+  font-size: clamp(23px, 2.25cqw, 27px);
+  font-weight: 680;
+}
+.milin-finance-overview-record-value .milin-finance-money-unit,
+.milin-finance-record-amount .milin-finance-money-unit {
+  margin-left: .35em;
+}
+.milin-finance-monthly-projection .milin-finance-money {
+  font-size: 1.16em;
+  font-weight: 600;
+}
+.milin-finance-monthly-projection .milin-finance-money-decimal {
+  font-size: .62em;
+}
+.milin-finance-monthly-projection .milin-finance-money-unit {
+  font-size: .5em;
+}
+.milin-finance-trend-axis-integer { font-size: 11px; }
+.milin-finance-trend-axis-decimal { font-size: 8px; }
+.milin-finance-trend-axis-unit { font-size: 7px; }
+
+@container (max-width: 970px) {
+  .milin-finance-overview-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .milin-finance-overview-card--account { grid-column: 1 / -1; }
+}
+
+@container (max-width: 450px) {
+  .milin-finance-overview-cards { grid-template-columns: 1fr; }
+  .milin-finance-overview-card--account { grid-column: auto; }
 }

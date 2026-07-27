@@ -1,7 +1,7 @@
 {
   "id": "personal-funds",
   "name": "Personal Funds",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "minAppVersion": "1.5.0",
   "description": "A responsive, local-first personal funds dashboard for records, planned expenses, credit cards, lending, Markdown notes, and Canvas summaries.",
   "author": "MI-Lin",
