@@ -44,7 +44,7 @@ When changing the folder, the plugin copies the current database to the new loca
 
 ## Migration and compatibility
 
-Version 3.0.8 supports:
+Version 3.0.9 supports:
 
 - migration of the earlier Manage `projects`, `actions`, `ideas`, and `finance` plugin data;
 - import of `Personal_funds/records.md`, including records, fixed expenses, expected income, and expected-expense values;
