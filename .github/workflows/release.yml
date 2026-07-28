@@ -1,0 +1,76 @@
+name: Release Obsidian plugin
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to repair
+        required: true
+        type: string
+      release_notes:
+        description: Notes to add when repairing an existing release
+        required: true
+        default: Maintenance release with corrected metadata and verified assets.
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      RELEASE_NOTES: ${{ inputs.release_notes || '' }}
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Verify tag and release files
+        shell: bash
+        run: |
+          manifest_version="$(node -p "require('./manifest.json').version")"
+          if [[ "$RELEASE_TAG" != "$manifest_version" ]]; then
+            echo "Release tag '$RELEASE_TAG' must exactly match manifest version '$manifest_version'." >&2
+            exit 1
+          fi
+          test -s main.js
+          test -s manifest.json
+          test -s styles.css
+
+      - name: Attest main.js provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: main.js
+
+      - name: Attest styles.css provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: styles.css
+
+      - name: Publish release files and notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" \
+              main.js manifest.json styles.css \
+              --clobber
+            if [[ -n "$RELEASE_NOTES" ]]; then
+              gh release edit "$RELEASE_TAG" \
+                --title "$RELEASE_TAG" \
+                --notes "$RELEASE_NOTES"
+            fi
+          else
+            gh release create "$RELEASE_TAG" \
+              main.js manifest.json styles.css \
+              --verify-tag \
+              --title "$RELEASE_TAG" \
+              --generate-notes
+          fi

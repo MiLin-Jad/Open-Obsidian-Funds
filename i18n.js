@@ -427,8 +427,8 @@ const ENGLISH_TEXT = Object.freeze({
     'This note has no ATX headings or Markdown lists yet',
   '此 markmap 代码块中没有标题或列表':
     'This markmap block has no headings or lists',
-  '请先在 Open Obsidian Manage 设置中启用思维导图':
-    'Enable mind maps in Open Obsidian Manage settings first',
+  '请先在 Open Manage 设置中启用思维导图':
+    'Enable mind maps in Open Manage settings first',
 
   // Settings and storage.
   '数据文件夹': 'Data folder',
@@ -457,8 +457,8 @@ const ENGLISH_TEXT = Object.freeze({
   '数据文件夹不能为空': 'The data folder cannot be empty',
   '数据文件夹设置失败': 'Could not update the data folder',
   '查看插件数据与界面信息': 'Review plugin data and interface settings',
-  '> Open Obsidian Manage 的本地数据文件。可以随笔记库同步，请不要手动破坏 JSON 代码块。':
-    '> Local Open Obsidian Manage data. It can sync with the vault; do not manually damage the JSON code block.',
+  '> Open Manage 的本地数据文件。可以随笔记库同步，请不要手动破坏 JSON 代码块。':
+    '> Local Open Manage data. It can sync with the vault; do not manually damage the JSON code block.',
 
   // Modal prompts, validation and confirmations.
   '请填写名称': 'Enter a name',

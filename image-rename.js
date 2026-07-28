@@ -130,7 +130,7 @@ class ImageRenameController {
         if (typeof entry.emitter?.offref === 'function') entry.emitter.offref(entry.ref);
         else if (typeof entry.ref === 'function') entry.ref();
       } catch (error) {
-        console.debug('Open Obsidian Manage: failed to unregister image event', error);
+        console.debug('Open Manage: failed to unregister image event', error);
       }
     }
     this.createEventRef = null;
@@ -160,7 +160,7 @@ class ImageRenameController {
 
     const operation = this.renameQueue.then(() => this.renameImagesInFile(activeFile));
     this.renameQueue = operation.catch(error => {
-      console.error('Open Obsidian Manage: failed to organize images in active file', error);
+      console.error('Open Manage: failed to organize images in active file', error);
       this.showNotice('整理当前文件中的图片失败，请查看控制台。');
     });
     await this.renameQueue;
@@ -181,7 +181,7 @@ class ImageRenameController {
       this.showNotice(`已创建 ${path}`);
       return baseFile;
     } catch (error) {
-      console.error('Open Obsidian Manage: failed to create default Base', error);
+      console.error('Open Manage: failed to create default Base', error);
       this.showNotice('创建 Files.base 失败，请查看控制台。');
       return null;
     }
@@ -241,13 +241,13 @@ class ImageRenameController {
         if (renameResult && sourceFile) {
           await this.repairAutoRenameReferences(sourceFile, renameResult, lifecycle)
             .catch(error => console.error(
-              'Open Obsidian Manage: failed to repair an image reference',
+              'Open Manage: failed to repair an image reference',
               error
             ));
         }
       })
       .catch(error => {
-        console.error('Open Obsidian Manage: image rename queue failed', error);
+        console.error('Open Manage: image rename queue failed', error);
       });
   }
 
@@ -286,7 +286,7 @@ class ImageRenameController {
       await this.app.vault.rename(currentFile, targetPath);
       return { sourcePath, targetPath };
     } catch (error) {
-      console.error('Open Obsidian Manage: automatic image rename failed', error);
+      console.error('Open Manage: automatic image rename failed', error);
       this.showNotice('图片自动重命名失败，请查看控制台。');
       return null;
     } finally {

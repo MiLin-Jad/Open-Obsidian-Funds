@@ -1,6 +1,6 @@
-# Open Obsidian Manage
+# Open Manage
 
-Open Obsidian Manage is a full-window management suite that combines project execution, future planning, personal funds, image workflows, and Markdown mind maps in one Obsidian plugin.
+Open Manage is a full-window management suite that combines project execution, future planning, personal funds, image workflows, and Markdown mind maps in one Obsidian plugin.
 
 ## Modules
 
@@ -38,13 +38,13 @@ The plugin's own `data.json` stores interface and feature settings only. Busines
 Change the folder from either:
 
 - the plugin's **设置** module; or
-- Obsidian Settings → Community plugins → Open Obsidian Manage.
+- Obsidian Settings → Community plugins → Open Manage.
 
 When changing the folder, the plugin copies the current database to the new location and switches the new folder to the primary data source. It does not automatically delete the old folder.
 
 ## Migration and compatibility
 
-Version 3.0.9 supports:
+Version 3.1.0 supports:
 
 - migration of the earlier Manage `projects`, `actions`, `ideas`, and `finance` plugin data;
 - import of `Personal_funds/records.md`, including records, fixed expenses, expected income, and expected-expense values;
@@ -72,10 +72,10 @@ The finance calculation rules remain compatible with Personal Funds:
 
 ## Installation
 
-Copy these files into `.obsidian/plugins/open-obsidian-manage/`:
+Copy these files into `.obsidian/plugins/personal-funds/`:
 
 - `manifest.json`
 - `main.js`
 - `styles.css`
 
-Reload Obsidian, enable **Open Obsidian Manage**, then run **打开管理中枢**.
+Reload Obsidian, enable **Open Manage**, then run **打开管理中枢**.

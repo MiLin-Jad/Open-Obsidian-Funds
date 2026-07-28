@@ -718,7 +718,7 @@ class MindmapView extends ItemView {
       if (token === this.renderToken) {
         this.showEmpty(`${translate(this.plugin, '无法读取', 'Unable to read')} ${file.basename}`);
       }
-      console.error('[Open Obsidian Manage] Failed to read mind map source', error);
+      console.error('[Open Manage] Failed to read mind map source', error);
       return;
     }
     if (token !== this.renderToken) return;
@@ -929,10 +929,10 @@ class MindmapController {
 
   async open(pinned = false) {
     if (!this.plugin.settings.mindmap.enabled) {
-      const source = '请先在 Open Obsidian Manage 设置中启用思维导图';
+      const source = '请先在 Open Manage 设置中启用思维导图';
       const message = this.plugin.t(source);
       new Notice(this.plugin.settings.language === 'en' && message === source
-        ? 'Enable mind maps in Open Obsidian Manage settings first'
+        ? 'Enable mind maps in Open Manage settings first'
         : message);
       return;
     }

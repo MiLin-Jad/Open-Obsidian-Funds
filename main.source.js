@@ -362,7 +362,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
     return [
       `# ${title}`,
       '',
-      '> Open Obsidian Manage 的本地数据文件。可以随笔记库同步，请不要手动破坏 JSON 代码块。',
+      '> Open Manage 的本地数据文件。可以随笔记库同步，请不要手动破坏 JSON 代码块。',
       '',
       '```json',
       JSON.stringify(body, null, 2),
@@ -409,7 +409,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
           : 0
       };
     } catch (error) {
-      console.error('Open Obsidian Manage: failed to import Personal Funds database', error);
+      console.error('Open Manage: failed to import Personal Funds database', error);
       return null;
     }
   }
@@ -425,7 +425,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
         this.readDatabase(FINANCE_DATABASE, 'finance')
       ]);
     } catch (error) {
-      console.error('Open Obsidian Manage: failed to read database', error);
+      console.error('Open Manage: failed to read database', error);
       new Notice(this.t('管理数据读取失败，请检查数据文件夹中的 JSON 代码块'));
     }
 
@@ -484,7 +484,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
       new Notice(this.t(`已从 ${this.getDataFolder()} 读取数据`));
       return true;
     } catch (error) {
-      console.error('Open Obsidian Manage: failed to reload workspace data', error);
+      console.error('Open Manage: failed to reload workspace data', error);
       new Notice(this.t(error.message || '读取数据失败，请检查数据文件夹中的 JSON 代码块'));
       return false;
     }
@@ -666,7 +666,7 @@ class ManageSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass('oom-native-settings');
-    containerEl.createEl('h2', { text: 'Open Obsidian Manage' });
+    containerEl.createEl('h2', { text: 'Open Manage' });
     containerEl.createEl('p', {
       text: '项目、资金、图片整理和思维导图统一由一个插件管理。',
       cls: 'setting-item-description'
@@ -851,7 +851,7 @@ class LegacyManageView extends ItemView {
   }
 
   getDisplayText() {
-    return 'Open Obsidian Manage';
+    return 'Open Manage';
   }
 
   getIcon() {
@@ -2498,7 +2498,7 @@ class ExpectedExpenseModal extends EntityModal {
 class ConfirmModal extends Modal {
   constructor(app, title, message, onConfirm) {
     super(app);
-    this.plugin = app.plugins?.plugins?.['open-obsidian-manage'] || null;
+    this.plugin = app.plugins?.plugins?.['personal-funds'] || null;
     this.title = title;
     this.message = message;
     this.onConfirm = onConfirm;
@@ -2509,6 +2509,7 @@ class ConfirmModal extends Modal {
     this.contentEl.addClass('oom-modal');
     this.contentEl.addClass('oom-confirm-modal');
     this.modalEl?.addClass('oom-manage-modal-frame');
+    this.modalEl?.addClass('oom-confirm-modal-frame');
     const heading = this.contentEl.createEl('header', { cls: 'oom-modal-heading' });
     heading.createEl('h2', { text: this.title });
     heading.createEl('p', { text: this.message, cls: 'oom-modal-subtitle' });

@@ -1,7 +1,7 @@
 {
-  "name": "open-obsidian-manage",
+  "name": "personal-funds",
   "private": true,
-  "version": "3.0.9",
+  "version": "3.1.0",
   "scripts": {
     "check": "node --check main.js && node --check main.source.js && node --check i18n.js && node --check image-rename.js && node --check mindmap.js"
   }

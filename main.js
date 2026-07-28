@@ -391,7 +391,7 @@ var require_i18n = __commonJS({
       "\u65E0\u6CD5\u8BFB\u53D6": "Unable to read",
       "\u6B64\u7B14\u8BB0\u4E2D\u8FD8\u6CA1\u6709 ATX \u6807\u9898\u6216 Markdown \u5217\u8868": "This note has no ATX headings or Markdown lists yet",
       "\u6B64 markmap \u4EE3\u7801\u5757\u4E2D\u6CA1\u6709\u6807\u9898\u6216\u5217\u8868": "This markmap block has no headings or lists",
-      "\u8BF7\u5148\u5728 Open Obsidian Manage \u8BBE\u7F6E\u4E2D\u542F\u7528\u601D\u7EF4\u5BFC\u56FE": "Enable mind maps in Open Obsidian Manage settings first",
+      "\u8BF7\u5148\u5728 Open Manage \u8BBE\u7F6E\u4E2D\u542F\u7528\u601D\u7EF4\u5BFC\u56FE": "Enable mind maps in Open Manage settings first",
       // Settings and storage.
       "\u6570\u636E\u6587\u4EF6\u5939": "Data folder",
       "\u754C\u9762\u4E0E\u6570\u636E": "Interface & data",
@@ -413,7 +413,7 @@ var require_i18n = __commonJS({
       "\u6570\u636E\u6587\u4EF6\u5939\u4E0D\u80FD\u4E3A\u7A7A": "The data folder cannot be empty",
       "\u6570\u636E\u6587\u4EF6\u5939\u8BBE\u7F6E\u5931\u8D25": "Could not update the data folder",
       "\u67E5\u770B\u63D2\u4EF6\u6570\u636E\u4E0E\u754C\u9762\u4FE1\u606F": "Review plugin data and interface settings",
-      "> Open Obsidian Manage \u7684\u672C\u5730\u6570\u636E\u6587\u4EF6\u3002\u53EF\u4EE5\u968F\u7B14\u8BB0\u5E93\u540C\u6B65\uFF0C\u8BF7\u4E0D\u8981\u624B\u52A8\u7834\u574F JSON \u4EE3\u7801\u5757\u3002": "> Local Open Obsidian Manage data. It can sync with the vault; do not manually damage the JSON code block.",
+      "> Open Manage \u7684\u672C\u5730\u6570\u636E\u6587\u4EF6\u3002\u53EF\u4EE5\u968F\u7B14\u8BB0\u5E93\u540C\u6B65\uFF0C\u8BF7\u4E0D\u8981\u624B\u52A8\u7834\u574F JSON \u4EE3\u7801\u5757\u3002": "> Local Open Manage data. It can sync with the vault; do not manually damage the JSON code block.",
       // Modal prompts, validation and confirmations.
       "\u8BF7\u586B\u5199\u540D\u79F0": "Enter a name",
       "\u8BF7\u8F93\u5165\u5927\u4E8E 0 \u7684\u91D1\u989D": "Enter an amount greater than 0",
@@ -696,7 +696,7 @@ views:
             if (typeof entry.emitter?.offref === "function") entry.emitter.offref(entry.ref);
             else if (typeof entry.ref === "function") entry.ref();
           } catch (error) {
-            console.debug("Open Obsidian Manage: failed to unregister image event", error);
+            console.debug("Open Manage: failed to unregister image event", error);
           }
         }
         this.createEventRef = null;
@@ -722,7 +722,7 @@ views:
         }
         const operation = this.renameQueue.then(() => this.renameImagesInFile(activeFile));
         this.renameQueue = operation.catch((error) => {
-          console.error("Open Obsidian Manage: failed to organize images in active file", error);
+          console.error("Open Manage: failed to organize images in active file", error);
           this.showNotice("\u6574\u7406\u5F53\u524D\u6587\u4EF6\u4E2D\u7684\u56FE\u7247\u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u63A7\u5236\u53F0\u3002");
         });
         await this.renameQueue;
@@ -738,7 +738,7 @@ views:
           this.showNotice(`\u5DF2\u521B\u5EFA ${path}`);
           return baseFile;
         } catch (error) {
-          console.error("Open Obsidian Manage: failed to create default Base", error);
+          console.error("Open Manage: failed to create default Base", error);
           this.showNotice("\u521B\u5EFA Files.base \u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u63A7\u5236\u53F0\u3002");
           return null;
         }
@@ -784,12 +784,12 @@ views:
           const renameResult = await this.renameImage(file, sourceFile);
           if (renameResult && sourceFile) {
             await this.repairAutoRenameReferences(sourceFile, renameResult, lifecycle).catch((error) => console.error(
-              "Open Obsidian Manage: failed to repair an image reference",
+              "Open Manage: failed to repair an image reference",
               error
             ));
           }
         }).catch((error) => {
-          console.error("Open Obsidian Manage: image rename queue failed", error);
+          console.error("Open Manage: image rename queue failed", error);
         });
       }
       getActiveReferenceSource(imageFile) {
@@ -820,7 +820,7 @@ views:
           await this.app.vault.rename(currentFile, targetPath);
           return { sourcePath, targetPath };
         } catch (error) {
-          console.error("Open Obsidian Manage: automatic image rename failed", error);
+          console.error("Open Manage: automatic image rename failed", error);
           this.showNotice("\u56FE\u7247\u81EA\u52A8\u91CD\u547D\u540D\u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u63A7\u5236\u53F0\u3002");
           return null;
         } finally {
@@ -2045,7 +2045,7 @@ var require_mindmap = __commonJS({
           if (token === this.renderToken) {
             this.showEmpty(`${translate(this.plugin, "\u65E0\u6CD5\u8BFB\u53D6", "Unable to read")} ${file.basename}`);
           }
-          console.error("[Open Obsidian Manage] Failed to read mind map source", error);
+          console.error("[Open Manage] Failed to read mind map source", error);
           return;
         }
         if (token !== this.renderToken) return;
@@ -2240,9 +2240,9 @@ var require_mindmap = __commonJS({
       }
       async open(pinned = false) {
         if (!this.plugin.settings.mindmap.enabled) {
-          const source = "\u8BF7\u5148\u5728 Open Obsidian Manage \u8BBE\u7F6E\u4E2D\u542F\u7528\u601D\u7EF4\u5BFC\u56FE";
+          const source = "\u8BF7\u5148\u5728 Open Manage \u8BBE\u7F6E\u4E2D\u542F\u7528\u601D\u7EF4\u5BFC\u56FE";
           const message = this.plugin.t(source);
-          new Notice2(this.plugin.settings.language === "en" && message === source ? "Enable mind maps in Open Obsidian Manage settings first" : message);
+          new Notice2(this.plugin.settings.language === "en" && message === source ? "Enable mind maps in Open Manage settings first" : message);
           return;
         }
         const file = this.getFollowFile();
@@ -2625,7 +2625,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
     return [
       `# ${title}`,
       "",
-      "> Open Obsidian Manage \u7684\u672C\u5730\u6570\u636E\u6587\u4EF6\u3002\u53EF\u4EE5\u968F\u7B14\u8BB0\u5E93\u540C\u6B65\uFF0C\u8BF7\u4E0D\u8981\u624B\u52A8\u7834\u574F JSON \u4EE3\u7801\u5757\u3002",
+      "> Open Manage \u7684\u672C\u5730\u6570\u636E\u6587\u4EF6\u3002\u53EF\u4EE5\u968F\u7B14\u8BB0\u5E93\u540C\u6B65\uFF0C\u8BF7\u4E0D\u8981\u624B\u52A8\u7834\u574F JSON \u4EE3\u7801\u5757\u3002",
       "",
       "```json",
       JSON.stringify(body, null, 2),
@@ -2664,7 +2664,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
         expectedExpense: Number.isFinite(Number(settings.expectedExpense)) ? Math.max(0, Number(settings.expectedExpense)) : 0
       };
     } catch (error) {
-      console.error("Open Obsidian Manage: failed to import Personal Funds database", error);
+      console.error("Open Manage: failed to import Personal Funds database", error);
       return null;
     }
   }
@@ -2679,7 +2679,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
         this.readDatabase(FINANCE_DATABASE, "finance")
       ]);
     } catch (error) {
-      console.error("Open Obsidian Manage: failed to read database", error);
+      console.error("Open Manage: failed to read database", error);
       new Notice(this.t("\u7BA1\u7406\u6570\u636E\u8BFB\u53D6\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5\u6570\u636E\u6587\u4EF6\u5939\u4E2D\u7684 JSON \u4EE3\u7801\u5757"));
     }
     let finance = financeFile?.finance;
@@ -2734,7 +2734,7 @@ module.exports = class OpenObsidianManagePlugin extends Plugin {
       new Notice(this.t(`\u5DF2\u4ECE ${this.getDataFolder()} \u8BFB\u53D6\u6570\u636E`));
       return true;
     } catch (error) {
-      console.error("Open Obsidian Manage: failed to reload workspace data", error);
+      console.error("Open Manage: failed to reload workspace data", error);
       new Notice(this.t(error.message || "\u8BFB\u53D6\u6570\u636E\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5\u6570\u636E\u6587\u4EF6\u5939\u4E2D\u7684 JSON \u4EE3\u7801\u5757"));
       return false;
     }
@@ -2892,7 +2892,7 @@ var ManageSettingTab = class extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("oom-native-settings");
-    containerEl.createEl("h2", { text: "Open Obsidian Manage" });
+    containerEl.createEl("h2", { text: "Open Manage" });
     containerEl.createEl("p", {
       text: "\u9879\u76EE\u3001\u8D44\u91D1\u3001\u56FE\u7247\u6574\u7406\u548C\u601D\u7EF4\u5BFC\u56FE\u7EDF\u4E00\u7531\u4E00\u4E2A\u63D2\u4EF6\u7BA1\u7406\u3002",
       cls: "setting-item-description"
@@ -2971,7 +2971,7 @@ var LegacyManageView = class extends ItemView {
     return VIEW_TYPE_MANAGE;
   }
   getDisplayText() {
-    return "Open Obsidian Manage";
+    return "Open Manage";
   }
   getIcon() {
     return "panel-top-open";
@@ -4548,7 +4548,7 @@ var ExpectedExpenseModal = class extends EntityModal {
 var ConfirmModal = class extends Modal {
   constructor(app, title, message, onConfirm) {
     super(app);
-    this.plugin = app.plugins?.plugins?.["open-obsidian-manage"] || null;
+    this.plugin = app.plugins?.plugins?.["personal-funds"] || null;
     this.title = title;
     this.message = message;
     this.onConfirm = onConfirm;
@@ -4558,6 +4558,7 @@ var ConfirmModal = class extends Modal {
     this.contentEl.addClass("oom-modal");
     this.contentEl.addClass("oom-confirm-modal");
     this.modalEl?.addClass("oom-manage-modal-frame");
+    this.modalEl?.addClass("oom-confirm-modal-frame");
     const heading = this.contentEl.createEl("header", { cls: "oom-modal-heading" });
     heading.createEl("h2", { text: this.title });
     heading.createEl("p", { text: this.message, cls: "oom-modal-subtitle" });
