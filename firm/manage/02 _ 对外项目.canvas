@@ -1,0 +1,14 @@
+{
+	"nodes":[
+		{"id":"5d91dc887e2d7438","type":"group","x":-800,"y":-280,"width":700,"height":1140,"color":"#525d66","label":"内部资料"},
+		{"id":"8ae50dca46f72c4a","type":"text","text":"# 当前项目","x":-1095,"y":-342,"width":210,"height":80,"color":"4"},
+		{"id":"b5567111d4f66ce8","type":"text","text":"[待签项目](obsidian://open?vault=Mind&file=Archive%2Ffirm%2Fmanage%2F00_%E4%BF%A1%E6%81%AF%E5%8D%8F%E4%BD%9C)","x":-780,"y":-262,"width":60,"height":222,"color":"5"},
+		{"id":"955b155e7524bb61","type":"text","text":"[车规阻尼项目](obsidian://open?vault=Mind&file=Archive%2Ffirm%2Fmanage%2F02_%E8%BD%A6%E8%A7%84%E9%98%BB%E5%B0%BC%E6%A8%A1%E5%9D%97)","x":-700,"y":0,"width":250,"height":50,"color":"4"},
+		{"id":"9fe567fc57103fdf","type":"text","text":"[4G远程继电器模块](obsidian://open?vault=Mind&file=Archive%2Ffirm%2Fmanage%2F02_4G%E8%BF%9C%E7%A8%8B%E7%BB%A7%E7%94%B5%E5%99%A8%E6%A8%A1%E5%9D%97)","x":-700,"y":120,"width":250,"height":50,"color":"4"},
+		{"id":"1fad62c55bc8d894","type":"text","text":"基本完成，待后续迭代上架或修复bug","x":-450,"y":145,"width":250,"height":80},
+		{"id":"be92d44f50e09844","x":-450,"y":25,"width":310,"height":55,"color":"1","type":"text","text":"尽快做一个测试程序，这周"}
+	],
+	"edges":[
+		{"id":"72bab94450a6aa2b","fromNode":"8ae50dca46f72c4a","fromSide":"bottom","toNode":"5d91dc887e2d7438","toSide":"left"}
+	]
+}

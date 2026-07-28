@@ -1,0 +1,38 @@
+filters:
+  and:
+    - file.ext != "png"
+    - file.ext != "base"
+properties:
+  file.name:
+    displayName: 名称
+  file.ext:
+    displayName: 扩展名
+  file.tags:
+    displayName: tags
+  note.aliases:
+    displayName: aliases
+  file.backlinks:
+    displayName: 文件反向链接
+  file.mtime:
+    displayName: 修改时间
+views:
+  - type: table
+    name: Files
+    filters:
+      and:
+        - file.inFolder("Archive/firm/idea")
+    order:
+      - file.name
+      - file.ext
+      - file.tags
+      - aliases
+      - file.backlinks
+      - file.mtime
+    sort:
+      - property: file.ext
+        direction: ASC
+    columnSize:
+      file.name: 330
+      file.tags: 196
+      note.aliases: 159
+      file.backlinks: 349

@@ -1,0 +1,12 @@
+{
+	"nodes":[
+		{"id":"b31231d171bce3af","x":0,"y":-283,"width":840,"height":603,"type":"group","label":"内部资料"},
+		{"id":"91b476bea38b68a2","type":"text","text":"小团队的管理，本质上就是规定怎样协作：","x":-425,"y":-380,"width":445,"height":54,"color":"4"},
+		{"id":"c38c95997ddf2030","type":"text","text":"任务： \n负责人： \n完成标准： \n截止时间： \n当前问题： \n最终决定： \n下一步：","x":0,"y":80,"width":160,"height":241},
+		{"id":"f578c80e379ab202","type":"text","text":"```\n每日同步：5分钟\n\n\t昨天完成：\n\t今天准备：\n\t当前问题：\n\t需要对方配合：\n\t\n周报：30分钟左右\n\n\t本周完成了什么\n\t哪些事情没有完成，原因是什么\n\t当前最大的风险\n\t下周最重要的1～3件事\n\t是否需要调整分工和截止时间\n\n```","x":260,"y":-280,"width":578,"height":509,"color":"1"},
+		{"id":"304a3098b2f0f1b9","type":"text","text":"协作管理，更多是做一个记录说明","x":-320,"y":-434,"width":340,"height":54,"color":"4"}
+	],
+	"edges":[
+		{"id":"77259263e5b76e12","fromNode":"91b476bea38b68a2","fromSide":"bottom","toNode":"b31231d171bce3af","toSide":"left"}
+	]
+}

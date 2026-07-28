@@ -1,12 +1,8 @@
 {
-  "name": "obsidian-personal-funds-preview",
+  "name": "open-obsidian-manage",
   "private": true,
-  "version": "2.1.0",
+  "version": "3.0.8",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "preview": "vite preview --host 127.0.0.1"
-  },
-  "devDependencies": {
-    "vite": "^6.1.0"
+    "check": "node --check main.js && node --check main.source.js && node --check i18n.js && node --check image-rename.js && node --check mindmap.js"
   }
 }

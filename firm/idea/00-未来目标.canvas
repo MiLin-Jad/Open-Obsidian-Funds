@@ -1,0 +1,11 @@
+{
+	"nodes":[
+		{"id":"2be935fafc5eb3a7","x":15,"y":-50,"width":485,"height":410,"type":"group","label":"内部资料"},
+		{"id":"0f0fcc15f4a0df0a","type":"text","text":"众筹搞产品","x":35,"y":-30,"width":425,"height":60,"color":"4"},
+		{"id":"2f868332e56ab0ea","type":"text","text":"未来方向","x":-280,"y":-220,"width":250,"height":60,"color":"4"},
+		{"id":"eb538d061cea3749","x":35,"y":30,"width":425,"height":60,"color":"4","type":"text","text":"转汇率差"}
+	],
+	"edges":[
+		{"id":"b54954adc48c6e02","fromNode":"2f868332e56ab0ea","fromSide":"right","toNode":"0f0fcc15f4a0df0a","toSide":"left"}
+	]
+}

@@ -1,0 +1,11 @@
+{
+	"nodes":[
+		{"id":"479caed5f694a7c4","type":"group","x":-1920,"y":-1919,"width":1040,"height":639,"label":"内部资料"},
+		{"id":"c6f91474ed5c7be0","type":"text","text":"[00-公司的历史进程](obsidian://open?vault=Mind&file=Archive%2Ffirm%2FQianHe%2F00_%E5%B5%8C%E6%A0%B8%E8%BF%9B%E7%A8%8B%20.%20Log)\n\n[01_公司的对外权益](obsidian://open?vault=Mind&file=Archive%2Ffirm%2FQianHe%2F01_%E5%AF%B9%E5%A4%96%E6%9D%83%E7%9B%8A)\n[02_公司的对外信息](obsidian://open?vault=Mind&file=Archive%2Ffirm%2FQianHe%2F02_%E5%AF%B9%E5%A4%96%E4%BF%A1%E6%81%AF)","x":-1900,"y":-1899,"width":240,"height":530},
+		{"id":"4069fe29809fb56f","type":"text","text":"做一个企业介绍PPT\n思考：怎么让用户放心","x":-1600,"y":-1899,"width":420,"height":79},
+		{"id":"896f5ef7424701c4","type":"text","text":"# 惠州市嵌核电子科技","x":-2320,"y":-1978,"width":356,"height":79,"color":"#019339"}
+	],
+	"edges":[
+		{"id":"bfa1a3cddb860aac","fromNode":"896f5ef7424701c4","fromSide":"bottom","toNode":"479caed5f694a7c4","toSide":"left"}
+	]
+}

@@ -1,9 +1,9 @@
 {
-  "id": "personal-funds",
-  "name": "Personal Funds",
-  "version": "2.1.0",
+  "id": "open-obsidian-manage",
+  "name": "Open Obsidian Manage",
+  "version": "3.0.8",
   "minAppVersion": "1.5.0",
-  "description": "A responsive, local-first personal funds dashboard for records, planned expenses, credit cards, lending, Markdown notes, and Canvas summaries.",
-  "author": "MI-Lin",
+  "description": "An integrated bilingual workspace for projects, planning, personal funds, image workflows, and Markdown mind maps.",
+  "author": "Mi-Lin",
   "isDesktopOnly": false
 }

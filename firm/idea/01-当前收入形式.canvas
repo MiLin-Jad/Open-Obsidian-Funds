@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"5915919e1e9638df","x":-267,"y":-271,"width":804,"height":266,"type":"group","label":"内部资料"},
+		{"id":"09a310afaca81cd9","x":-245,"y":145,"width":380,"height":155,"type":"group","label":"内部资料"},
+		{"id":"bb9a22d26de2fbcd","type":"text","text":"（闲鱼）小猫搞电子  -接项目","x":-247,"y":-131,"width":296,"height":56},
+		{"id":"7bcac8f72bdc7439","type":"text","text":"7.15-准备软件开发标签","x":79,"y":-135,"width":250,"height":60,"color":"1"},
+		{"id":"83e98b834bea48aa","type":"text","text":"陈治宇（淘宝、闲鱼、社群）","x":-225,"y":165,"width":304,"height":50},
+		{"id":"1542eb37c86a83e7","type":"text","text":"bilibili（进行扩展）","x":-225,"y":225,"width":250,"height":50},
+		{"id":"ed417a6eed2b279d","type":"text","text":"（抖音）","x":-247,"y":-75,"width":207,"height":50,"color":"1"},
+		{"id":"a309d295ea54f3c7","type":"text","text":"单独新搞一个闲鱼做Ai","x":-247,"y":-191,"width":296,"height":60},
+		{"id":"a8ffb2eb39f73860","type":"text","text":"红框稳定做了以后，再进军Ai自媒体账户","x":49,"y":-191,"width":468,"height":55},
+		{"id":"efd6014abb3e353d","type":"text","text":"小红书","x":-247,"y":-251,"width":250,"height":60},
+		{"id":"75cb7a494c9d64e0","type":"text","text":"# 订单客户来源","x":-700,"y":-360,"width":245,"height":60,"color":"1"}
+	],
+	"edges":[
+		{"id":"69e407ab365d1e1a","fromNode":"75cb7a494c9d64e0","fromSide":"bottom","toNode":"bb9a22d26de2fbcd","toSide":"left"},
+		{"id":"e87b6754d17ed57c","fromNode":"75cb7a494c9d64e0","fromSide":"bottom","toNode":"ed417a6eed2b279d","toSide":"left"},
+		{"id":"d835bc2f2faa6755","fromNode":"75cb7a494c9d64e0","fromSide":"bottom","toNode":"83e98b834bea48aa","toSide":"left"},
+		{"id":"878649f10ba0f020","fromNode":"bb9a22d26de2fbcd","fromSide":"right","toNode":"7bcac8f72bdc7439","toSide":"left"}
+	]
+}
